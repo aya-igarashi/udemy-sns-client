@@ -7,9 +7,23 @@ const Timeline = () => {
 
   const [postText, setPostText] = useState<string>("");
   const [latestPosts, setLatestPosts] = useState<PostType[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // 投稿中かどうかの状態を追加
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // すでに投稿中なら処理を中断
+    if (isSubmitting) {
+      return;
+    }
+
+    // 投稿中に設定
+    setIsSubmitting(true);
+
+    if (!postText) {
+      alert("ポスト内容を入力してください");
+      return;
+    }
 
     try {
       const newPost = await apiClient.post("/posts/post", {
@@ -21,6 +35,9 @@ const Timeline = () => {
     } catch (error) {
       console.log(error);
       alert("ログインしてください")
+    } finally {
+      // 投稿処理が終わったら投稿中の状態を解除
+      setIsSubmitting(false);
     }
   };
 
@@ -54,8 +71,9 @@ const Timeline = () => {
             <button
               type="submit"
               className="mt-2 bg-gray-700 hover:bg-green-700 duration-200 text-white font-semibold py-2 px-4 rounded"
+              disabled={isSubmitting} // 投稿中はボタンを無効化
             >
-              投稿
+              {isSubmitting ? '投稿中...' : '投稿'}
             </button>
           </form>
         </div>
